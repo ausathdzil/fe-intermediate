@@ -1,4 +1,4 @@
-import "dotenv/config";
-import { drizzle } from "drizzle-orm/node-postgres";
+import 'dotenv/config';
+import { drizzle } from 'drizzle-orm/node-postgres';
 
-export const db = drizzle("postgres://postgres:secret@localhost:5432/postgres");
+export const db = drizzle('postgres://postgres:secret@localhost:5432/postgres');

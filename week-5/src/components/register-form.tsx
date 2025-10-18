@@ -1,4 +1,4 @@
-import { register } from "@/lib/actions";
+import { register } from '@/lib/actions';
 
 export function RegisterForm() {
   return (
