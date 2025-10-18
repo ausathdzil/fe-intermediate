@@ -1,0 +1,13 @@
+@import 'tailwindcss';
+
+form {
+  @apply flex flex-col gap-2 w-full max-w-sm;
+}
+
+input {
+  @apply border border-gray-300 rounded-md p-2;
+}
+
+button {
+  @apply bg-blue-500 text-white rounded-md p-2;
+}
