@@ -1,6 +1,6 @@
 'use server';
 
-import { revalidatePath } from 'next/cache';
+import { revalidatePath, revalidateTag } from 'next/cache';
 import { db } from '@/db';
 import { usersTable } from '@/db/schema';
 
@@ -32,5 +32,6 @@ export async function register(formData: FormData) {
     .values({ name, email, password })
     .returning({ id: usersTable.id });
 
-  revalidatePath('/');
+  revalidatePath('/users');
+  revalidateTag('users');
 }

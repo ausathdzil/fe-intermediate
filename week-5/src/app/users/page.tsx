@@ -1,8 +1,15 @@
+import { unstable_cache } from 'next/cache';
+
 import { db } from '@/db';
 import { usersTable } from '@/db/schema';
 
-export default async function UsersPage() {
+const getUser = unstable_cache(async () => {
   const users = await db.select().from(usersTable);
+  return users;
+}, ['users']);
+
+export default async function UsersPage() {
+  const users = await getUser();
 
   return (
     <main className="font-sans flex flex-col gap-4 items-center justify-center h-screen">
