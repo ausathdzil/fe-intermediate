@@ -1,6 +1,9 @@
+/** biome-ignore-all lint/suspicious/noExplicitAny: Demo */
 'use server';
 
-import { revalidatePath, revalidateTag } from 'next/cache';
+import { updateTag } from 'next/cache';
+import { z } from 'zod';
+
 import { db } from '@/db';
 import { usersTable } from '@/db/schema';
 
@@ -22,16 +25,40 @@ export async function login(formData: FormData) {
   console.log(data);
 }
 
-export async function register(formData: FormData) {
-  const name = formData.get('name') as string;
-  const email = formData.get('email') as string;
-  const password = formData.get('password') as string;
+const registerSchema = z.object({
+  name: z.string().min(1).max(255),
+  email: z.email().max(255),
+  password: z
+    .string()
+    .min(8)
+    .max(255)
+    .regex(/[A-Z]/)
+    .regex(/[a-z]/)
+    .regex(/[0-9]/)
+    .regex(/[^A-Za-z0-9]/),
+});
+
+export async function register(_prevState: any, formData: FormData) {
+  const rawFormData = {
+    name: formData.get('name'),
+    email: formData.get('email'),
+    password: formData.get('password'),
+  };
+
+  const validatedFields = registerSchema.safeParse(rawFormData);
+
+  if (!validatedFields.success) {
+    return {
+      errors: z.flattenError(validatedFields.error).fieldErrors,
+    };
+  }
+
+  const { name, email, password } = validatedFields.data;
 
   await db
     .insert(usersTable)
     .values({ name, email, password })
     .returning({ id: usersTable.id });
 
-  revalidatePath('/users');
-  revalidateTag('users');
+  updateTag('users');
 }

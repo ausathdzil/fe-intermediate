@@ -1,11 +1,52 @@
-import { LoginForm } from '@/components/login-form';
-import { RegisterForm } from '@/components/register-form';
+'use client';
 
-export default function Home() {
+import { useActionState } from 'react';
+
+import { register } from '@/lib/actions';
+
+export default function Register() {
+  const [_, formAction, pending] = useActionState(register, undefined);
+
   return (
     <main className="font-sans flex flex-col gap-4 items-center justify-center h-screen">
-      <RegisterForm />
-      {/* <LoginForm /> */}
+      <form action={formAction}>
+        <div className="flex flex-col gap-2">
+          <label htmlFor="name">Name</label>
+          <input
+            id="name"
+            placeholder="John Doe"
+            type="text"
+            name="name"
+            required
+            maxLength={255}
+          />
+        </div>
+        <div className="flex flex-col gap-2">
+          <label htmlFor="email">Email</label>
+          <input
+            id="email"
+            placeholder="m@example.com"
+            type="email"
+            name="email"
+            required
+            maxLength={255}
+          />
+        </div>
+        <div className="flex flex-col gap-2">
+          <label htmlFor="password">Password</label>
+          <input
+            id="password"
+            type="password"
+            name="password"
+            required
+            minLength={8}
+            maxLength={255}
+          />
+        </div>
+        <button disabled={pending} type="submit">
+          Register
+        </button>
+      </form>
     </main>
   );
 }
