@@ -7,9 +7,26 @@ import { z } from 'zod';
 import { db } from '@/db';
 import { usersTable } from '@/db/schema';
 
+const loginSchema = z.object({
+  email: z.email(),
+  password: z.string(),
+});
+
 export async function login(formData: FormData) {
-  const email = formData.get('email');
-  const password = formData.get('password');
+  const rawFormData = {
+    email: formData.get('email'),
+    password: formData.get('password'),
+  };
+
+  const validatedFields = loginSchema.safeParse(rawFormData);
+
+  if (!validatedFields.success) {
+    throw new Error(
+      JSON.stringify(z.flattenError(validatedFields.error).fieldErrors)
+    );
+  }
+
+  const { email, password } = validatedFields.data;
 
   const res = await fetch('http://localhost:3000/api/login', {
     method: 'POST',
@@ -25,40 +42,80 @@ export async function login(formData: FormData) {
   console.log(data);
 }
 
+export type RegisterFormState = {
+  success: boolean;
+  message: string;
+  errors?: {
+    name?: string[] | undefined;
+    email?: string[] | undefined;
+    password?: string[] | undefined;
+  };
+  fields: {
+    name: string;
+    email: string;
+    password: string;
+  };
+};
+
 const registerSchema = z.object({
-  name: z.string().min(1).max(255),
+  name: z.string().min(10).max(255),
   email: z.email().max(255),
-  password: z
-    .string()
-    .min(8)
-    .max(255)
-    .regex(/[A-Z]/)
-    .regex(/[a-z]/)
-    .regex(/[0-9]/)
-    .regex(/[^A-Za-z0-9]/),
+  password: z.string().min(8).max(255),
 });
 
-export async function register(_prevState: any, formData: FormData) {
+export async function register(
+  _prevState: RegisterFormState,
+  formData: FormData
+) {
   const rawFormData = {
-    name: formData.get('name'),
-    email: formData.get('email'),
-    password: formData.get('password'),
+    name: formData.get('name') as string,
+    email: formData.get('email') as string,
+    password: formData.get('password') as string,
   };
 
   const validatedFields = registerSchema.safeParse(rawFormData);
 
   if (!validatedFields.success) {
+    const fieldErrors = z.flattenError(validatedFields.error).fieldErrors;
     return {
+      success: false,
+      message: '',
       errors: z.flattenError(validatedFields.error).fieldErrors,
+      fields: {
+        name: fieldErrors.name ? '' : rawFormData.name,
+        email: fieldErrors.email ? '' : rawFormData.email,
+        password: fieldErrors.password ? '' : rawFormData.password,
+      },
     };
   }
 
   const { name, email, password } = validatedFields.data;
 
-  await db
-    .insert(usersTable)
-    .values({ name, email, password })
-    .returning({ id: usersTable.id });
+  try {
+    await db
+      .insert(usersTable)
+      .values({ name, email, password })
+      .returning({ id: usersTable.id });
 
-  updateTag('users');
+    updateTag('users');
+  } catch (error) {
+    const message =
+      error instanceof Error ? error.message : 'Something went wrong';
+
+    return {
+      success: false,
+      message,
+      fields: rawFormData,
+    };
+  }
+
+  return {
+    success: true,
+    message: 'User created successfully',
+    fields: {
+      name: '',
+      email: '',
+      password: '',
+    },
+  };
 }
