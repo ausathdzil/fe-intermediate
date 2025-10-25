@@ -1,9 +1,11 @@
-import { LoginForm } from '@/components/login-form';
+import Link from 'next/link';
 
 export default function Home() {
   return (
     <main className="font-sans flex flex-col gap-4 items-center justify-center h-screen">
-      <LoginForm />
+      <Link href="/login">Login</Link>
+      <Link href="/register">Register</Link>
+      <Link href="/users">Users</Link>
     </main>
   );
 }

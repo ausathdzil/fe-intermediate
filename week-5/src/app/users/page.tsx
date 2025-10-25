@@ -1,8 +1,8 @@
+import { cacheTag } from 'next/cache';
 import Link from 'next/link';
 
 import { db } from '@/db';
 import { usersTable } from '@/db/schema';
-import { cacheTag } from 'next/cache';
 
 async function getUsers() {
   'use cache';

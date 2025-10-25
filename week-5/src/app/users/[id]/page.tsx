@@ -1,6 +1,8 @@
+import { eq } from 'drizzle-orm';
+import { Suspense } from 'react';
+
 import { db } from '@/db';
 import { usersTable } from '@/db/schema';
-import { eq } from 'drizzle-orm';
 
 async function getUser(id: string) {
   const [user] = await db
@@ -19,5 +21,9 @@ export default async function UserPage({
   const { id } = await params;
   const user = await getUser(id);
 
-  return <pre>{JSON.stringify(user, null, 2)}</pre>;
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <pre>{JSON.stringify(user, null, 2)}</pre>
+    </Suspense>
+  );
 }
